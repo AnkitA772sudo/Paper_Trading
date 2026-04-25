@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Mall</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --primary: #264653;
+      --accent: #2a9d8f;
+      --accent-2: #e9c46a;
+      --text: #1f2937;
+      --muted: #64748b;
+      --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .container {
+      width: min(1180px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+    .brand span {
+      width: 2rem;
+      height: 2rem;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 0.75rem;
+    }
+    nav {
+      display: flex;
+      gap: 1.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+      padding: 4rem 0 2rem;
+    }
+    .hero-copy h1 {
+      font-size: clamp(2.5rem, 4vw, 4rem);
+      line-height: 0.95;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+    .hero-copy p {
+      margin: 1.5rem 0;
+      color: var(--muted);
+      max-width: 43rem;
+      font-size: 1.05rem;
+      line-height: 1.75;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .button {
+      border: none;
+      padding: 1rem 1.75rem;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 30px rgba(42, 157, 143, 0.15);
+    }
+    .button-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .button-secondary {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid #d1d5db;
+    }
+    .hero-visual {
+      position: relative;
+      min-height: 420px;
+      border-radius: 2rem;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, rgba(42,157,143,.12) 0%, rgba(38,70,83,0.05) 100%);
+    }
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(255,255,255,.9), transparent 35%), radial-gradient(circle at bottom right, rgba(42,157,143,.2), transparent 30%);
+      pointer-events: none;
+    }
+    .hero-cards {
+      position: absolute;
+      inset: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      align-content: start;
+    }
+    .hero-card {
+      border-radius: 1.5rem;
+      padding: 1.15rem;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .hero-card span {
+      font-size: 1.75rem;
+    }
+    .hero-card div {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .hero-card div strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--primary);
+    }
+    .search-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin: 2rem 0 1rem;
+      padding: 1.2rem 1.4rem;
+      background: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .search-panel input,
+    .search-panel select {
+      flex: 1;
+      min-width: 180px;
+      padding: 0.95rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .sidebar {
+      display: grid;
+      gap: 1.2rem;
+      margin: 2rem 0;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .product-card {
+      background: var(--card);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card img {
+      height: 240px;
+      object-fit: cover;
+      width: 100%;
+    }
+    .product-info {
+      padding: 1.3rem;
+      display: grid;
+      gap: 0.9rem;
+      flex: 1;
+    }
+    .product-info h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .product-info p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .product-meta small {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .product-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      padding: 0 1.3rem 1.3rem;
+    }
+    .product-actions button {
+      flex: 1;
+      min-width: 110px;
+      padding: 0.95rem 1rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      color: white;
+      background: var(--primary);
+      transition: background 0.2s ease;
+    }
+    .product-actions button:hover {
+      background: #1e293b;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 3rem 0;
+    }
+    .feature-card {
+      background: #fff;
+      border-radius: 1.5rem;
+      padding: 1.4rem;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 0.75rem;
+    }
+    .feature-card h4 {
+      margin: 0;
+    }
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .footer {
+      padding: 3rem 0 2rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .footer small {
+      display: block;
+      margin-top: 1rem;
+    }
+    .cart-panel {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      width: min(340px, calc(100% - 2rem));
+      max-height: 78vh;
+      overflow: auto;
+      background: rgba(255,255,255,0.96);
+      border-radius: 1.5rem;
+      box-shadow: 0 30px 60px rgba(15,23,42,0.14);
+      padding: 1.2rem;
+      border: 1px solid #e2e8f0;
+    }
+    .cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.9rem;
+    }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 3rem 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.9rem 0;
+      border-top: 1px solid #e2e8f0;
+    }
+    .cart-item:first-child {
+      border-top: none;
+    }
+    .cart-item img {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.85rem;
+      object-fit: cover;
+    }
+    .cart-footer {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-weight: 700;
+    }
+    .hidden {
+      display: none;
+    }
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero-visual {
+        min-height: 340px;
+      }
+      .hero-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 680px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .search-panel {
+        flex-direction: column;
+      }
+      .cart-panel {
+        right: 0.75rem;
+        left: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="topbar">
+        <a class="brand" href="#">
+          <span>🛍️</span>
+          <div>Town Mall</div>
+        </a>
+        <nav>
+          <a href="#categories">Categories</a>
+          <a href="#products">Products</a>
+          <a href="#features">Features</a>
+          <a href="#footer">Contact</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-copy">
+        <p style="text-transform: uppercase; letter-spacing: .2em; color: #2a9d8f; font-weight: 700; margin-bottom: 1rem;">Welcome to your shopping mall</p>
+        <h1>Shop premium brands, discover great deals, and enjoy fast delivery.</h1>
+        <p>Explore electronics, fashion, home goods, beauty, and more in one modern shopping experience. Everything you need, all in one place.</p>
+        <div class="hero-actions">
+          <button class="button button-primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Browse Products</button>
+          <button class="button button-secondary" onclick="document.getElementById('categories').scrollIntoView({behavior:'smooth'})">View Categories</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-cards">
+          <div class="hero-card">
+            <span>⚡</span>
+            <div><strong>Fast delivery</strong>Order today and receive your items within 48 hours.</div>
+          </div>
+          <div class="hero-card">
+            <span>⭐</span>
+            <div><strong>Top brands</strong>Shop trusted labels across all categories.</div>
+          </div>
+          <div class="hero-card">
+            <span>🛡️</span>
+            <div><strong>Secure checkout</strong>Safe payment options and buyer protection.</div>
+          </div>
+          <div class="hero-card">
+            <span>💬</span>
+            <div><strong>24/7 support</strong>Help whenever you need it, right from our team.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="search-panel">
+      <input id="searchInput" type="search" placeholder="Search products by name" oninput="filterProducts()">
+      <select id="categorySelect" onchange="filterProducts()">
+        <option value="all">All categories</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Home">Home</option>
+        <option value="Beauty">Beauty</option>
+      </select>
+      <button class="button button-primary" onclick="toggleCartVisibility()">Cart <span id="cartCount">0</span></button>
+    </section>
+    <section id="categories">
+      <div class="section-title">
+        <h2>Shop by category</h2>
+        <small>Choose what fits your lifestyle.</small>
+      </div>
+      <div class="features">
+        <article class="feature-card">
+          <h4>Fashion</h4>
+          <p>Trendy clothing, shoes, and accessories for every season.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Electronics</h4>
+          <p>Latest gadgets, wireless audio, smart home devices, and more.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Home</h4>
+          <p>Furniture, decor, kitchenware, and comfort items for your space.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Beauty</h4>
+          <p>Skincare, cosmetics, and personal care essentials with premium quality.</p>
+        </article>
+      </div>
+    </section>
+    <section id="products">
+      <div class="section-title">
+        <h2>Featured products</h2>
+        <small>Popular picks from our mall collections.</small>
+      </div>
+      <div class="card-grid" id="productGrid">
+        <article class="product-card" data-category="Fashion">
+          <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80" alt="Modern jacket">
+          <div class="product-info">
+            <h3>City Jacket</h3>
+            <p>Lightweight jacket with a sleek design, perfect for everyday wear.</p>
+            <div class="product-meta"><span>$79</span><small>Fashion</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('City Jacket', 79, 'Fashion', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+        <article class="product-card" data-category="Electronics">
+          <img src="https://images.unsplash.com/photo-1510557880182-3eec5bc89fd7?auto=format&fit=crop&w=800&q=80" alt="Wireless headphones">
+          <div class="product-info">
+            <h3>Noise Headphones</h3>
+            <p>Wireless headphones with active noise cancellation and long battery life.</p>
+            <div class="product-meta"><span>$129</span><small>Electronics</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Noise Headphones', 129, 'Electronics', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+        <article class="product-card" data-category="Home">
+          <img src="https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=800&q=80" alt="Modern sofa">
+          <div class="product-info">
+            <h3>Comfort Sofa</h3>
+            <p>Elegant sofa with soft cushions and modern styling for any living room.</p>
+            <div class="product-meta"><span>$349</span><small>Home</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Comfort Sofa', 349, 'Home', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+        <article class="product-card" data-category="Beauty">
+          <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=800&q=80" alt="Beauty essentials">
+          <div class="product-info">
+            <h3>Glow Serum</h3>
+            <p>Daily vitamin C serum to brighten and hydrate your skin.</p>
+            <div class="product-meta"><span>$24</span><small>Beauty</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Glow Serum', 24, 'Beauty', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+        <article class="product-card" data-category="Electronics">
+          <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=800&q=80" alt="Smart watch">
+          <div class="product-info">
+            <h3>Smart Watch</h3>
+            <p>Fitness smartwatch with notifications, health tracking, and water resistance.</p>
+            <div class="product-meta"><span>$199</span><small>Electronics</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Smart Watch', 199, 'Electronics', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+        <article class="product-card" data-category="Fashion">
+          <img src="https://images.unsplash.com/photo-1528701800489-20d0b5b0b67d?auto=format&fit=crop&w=800&q=80" alt="Sneakers">
+          <div class="product-info">
+            <h3>Street Sneakers</h3>
+            <p>Premium sneakers designed for comfort and everyday street style.</p>
+            <div class="product-meta"><span>$99</span><small>Fashion</small></div>
+          </div>
+          <div class="product-actions">
+            <button onclick="addToCart('Street Sneakers', 99, 'Fashion', this.parentElement.parentElement.querySelector('img').src)">Add to Cart</button>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section id="features">
+      <div class="section-title">
+        <h2>Why shop with us?</h2>
+        <small>All the benefits of a full-service mall in one site.</small>
+      </div>
+      <div class="features">
+        <article class="feature-card">
+          <h4>Free shipping</h4>
+          <p>Enjoy free shipping on orders over $75, with fast tracking and easy delivery updates.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Exclusive discounts</h4>
+          <p>Members get access to special sales, seasonal deals, and flash promotions.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Easy returns</h4>
+          <p>Hassle-free returns within 30 days for a full refund or store credit.</p>
+        </article>
+        <article class="feature-card">
+          <h4>Secure payments</h4>
+          <p>Pay securely with credit card, PayPal, or digital wallet options.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <footer class="footer" id="footer">
+    <div class="container">
+      <p>Town Mall is your one-stop shopping destination for fashion, electronics, home, and beauty.</p>
+      <small>© 2026 Town Mall. Designed for modern shoppers.</small>
+    </div>
+  </footer>
+  <aside class="cart-panel hidden" id="cartPanel">
+    <div class="cart-header">
+      <div>
+        <strong>Your cart</strong>
+        <div style="color: var(--muted); font-size: 0.95rem;">Review items before checkout</div>
+      </div>
+      <button class="button button-secondary" onclick="toggleCartVisibility()">Close</button>
+    </div>
+    <div id="cartItems"></div>
+    <div class="cart-footer">
+      <span>Total:</span>
+      <strong id="cartTotal">$0</strong>
+    </div>
+  </aside>
+  <script>
+    const cart = [];
+    const cartCount = document.getElementById('cartCount');
+    const cartItemsEl = document.getElementById('cartItems');
+    const cartTotalEl = document.getElementById('cartTotal');
+    const cartPanel = document.getElementById('cartPanel');
+    const searchInput = document.getElementById('searchInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const productGrid = document.getElementById('productGrid');
+
+    function addToCart(name, price, category, image) {
+      const existing = cart.find(item => item.name === name);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ name, price, category, image, quantity: 1 });
+      }
+      updateCart();
+      if (cartPanel.classList.contains('hidden')) {
+        toggleCartVisibility();
+      }
+    }
+
+    function updateCart() {
+      cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+      cartItemsEl.innerHTML = cart.length === 0
+        ? '<div style="color: var(--muted); padding: 1rem 0;">Your cart is empty.</div>'
+        : cart.map(item => `
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}">
+            <div>
+              <strong>${item.name}</strong>
+              <div style="color: var(--muted); font-size: 0.95rem;">${item.quantity} × $${item.price}</div>
+            </div>
+            <div style="text-align:right; font-weight:700;">$${item.price * item.quantity}</div>
+          </div>`).join('');
+      cartTotalEl.textContent = '$' + cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    }
+
+    function filterProducts() {
+      const query = searchInput.value.toLowerCase();
+      const category = categorySelect.value;
+      const products = productGrid.querySelectorAll('.product-card');
+      products.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const matchesName = title.includes(query);
+        const matchesCategory = category === 'all' || card.dataset.category === category;
+        card.style.display = matchesName && matchesCategory ? '' : 'none';
+      });
+    }
+
+    function toggleCartVisibility() {
+      cartPanel.classList.toggle('hidden');
+    }
+
+    updateCart();
+  </script>
+</body>
+</html>

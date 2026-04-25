@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaperTrade — Dashboard</title>
+  <!-- Apply saved theme before body renders to prevent FOUC -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.classList.add('theme-' + theme);
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: linear-gradient(160deg, #0a0e1a 0%, #0d1b3e 60%, #0a1628 100%);
+      --card: rgba(10,20,50,0.75);
+      --border: rgba(212,175,55,0.25);
+      --border-hover: rgba(212,175,55,0.6);
+      --text: #d4af37;
+      --text-body: #e8dfc0;
+      --muted: rgba(212,175,55,0.5);
+      --input-bg: rgba(255,255,255,0.04);
+      --header: rgba(8,14,32,0.9);
+      --accent: #d4af37;
+      --accent-dark: #b8860b;
+      --gold-glow: rgba(212,175,55,0.15);
+    }
+    body { min-height:100vh; background:var(--bg); font-family:'Segoe UI',system-ui,sans-serif; color:var(--text-body); }
+
+    header {
+      display:flex; align-items:center; gap:1rem; padding:.75rem 1.5rem;
+      background:var(--header); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border); flex-wrap:wrap;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+    .header-title { font-size:1.4rem; font-weight:700; flex:1; white-space:nowrap; color:var(--accent); letter-spacing:1px; }
+    #balance-display { font-size:1.1rem; font-weight:700; color:var(--accent); white-space:nowrap; text-shadow: 0 0 12px rgba(212,175,55,0.4); }
+    .header-actions { display:flex; gap:.5rem; }
+    .icon-btn {
+      background:rgba(212,175,55,0.08); border:1px solid var(--border);
+      border-radius:8px; color:var(--accent); cursor:pointer; font-size:1rem;
+      min-height:44px; min-width:44px; padding:0 .75rem; transition:all .2s;
+    }
+    .icon-btn:hover { background:rgba(212,175,55,0.18); border-color:var(--border-hover); }
+
+    nav {
+      display:flex; flex-wrap:wrap; gap:.5rem; padding:.75rem 1.5rem;
+      background:rgba(8,14,32,0.8); backdrop-filter:blur(8px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-btn {
+      background:rgba(212,175,55,0.06); border:1px solid var(--border);
+      border-radius:8px; color:var(--muted); cursor:pointer; font-size:.9rem;
+      font-weight:600; min-height:44px; padding:0 1.25rem; transition:all .2s;
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background:linear-gradient(135deg,rgba(212,175,55,0.2),rgba(184,134,11,0.2));
+      border-color:var(--border-hover); color:var(--accent);
+      box-shadow: 0 0 12px rgba(212,175,55,0.15);
+    }
+
+    main { max-width:1100px; margin:0 auto; padding:1.5rem; }
+    .card {
+      background:var(--card); backdrop-filter:blur(16px);
+      border:1px solid var(--border); border-radius:16px; padding:1.5rem;
+      margin-bottom:1.25rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,175,55,0.08);
+    }
+    h2 { font-size:1rem; margin-bottom:1rem; color:var(--accent); text-transform:uppercase; letter-spacing:1px; }
+    label { display:block; font-size:.75rem; color:var(--muted); margin-bottom:.3rem; margin-top:.75rem; text-transform:uppercase; letter-spacing:.5px; }
+    label:first-child { margin-top:0; }
+    input, select {
+      width:100%; padding:.65rem .9rem; background:var(--input-bg);
+      border:1px solid var(--border); border-radius:8px; color:#f0e6c0;
+      font-size:.95rem; outline:none; transition:border-color .2s, box-shadow .2s;
+    }
+    input:focus, select:focus { border-color:var(--border-hover); box-shadow:0 0 0 3px var(--gold-glow); }
+    select option { background:#0d1b3e; color:#f0e6c0; }
+
+    .btn-primary {
+      background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+      border:none; border-radius:8px; color:#0a0e1a; cursor:pointer;
+      font-size:1rem; font-weight:700; min-height:44px; padding:.75rem 1.5rem;
+      transition:all .2s; width:100%; margin-top:1rem; letter-spacing:.5px;
+    }
+    .btn-primary:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 4px 16px rgba(212,175,55,0.3); }
+    .btn-danger {
+      background:rgba(180,30,30,0.8); border:1px solid rgba(255,80,80,0.3);
+      border-radius:8px; color:#fff; cursor:pointer; font-size:.9rem;
+      font-weight:600; min-height:44px; padding:.65rem 1.25rem; transition:opacity .2s;
+    }
+    .btn-danger:hover { opacity:.9; }
+
+    .search-wrapper { position:relative; }
+    #search-results {
+      display:none; position:absolute; top:100%; left:0; right:0;
+      background:#0a1628; border:1px solid var(--border);
+      border-radius:8px; z-index:100; margin-top:2px; overflow:hidden;
+      box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    }
+    .search-result-item { padding:.65rem .9rem; cursor:pointer; font-size:.9rem; color:#e8dfc0; transition:background .15s; }
+    .search-result-item:hover { background:rgba(212,175,55,0.12); }
+    .search-result-empty { color:var(--muted); cursor:default; }
+    .search-result-empty:hover { background:transparent; }
+    #selected-price { font-size:1.3rem; font-weight:700; color:var(--accent); margin:.5rem 0; text-shadow:0 0 10px rgba(212,175,55,0.3); }
+
+    .chart-wrapper { position:relative; margin:1rem 0; max-height:260px; }
+    .table-wrapper { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th { text-align:left; padding:.6rem .75rem; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; text-transform:uppercase; font-size:.75rem; letter-spacing:.5px; }
+    td { padding:.6rem .75rem; border-bottom:1px solid rgba(212,175,55,0.08); color:#e8dfc0; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(212,175,55,0.04); }
+
+    .pl-positive { color:#4ade80; font-weight:600; }
+    .pl-negative { color:#f87171; font-weight:600; }
+
+    .portfolio-summary { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1rem; }
+    #total-value { font-size:1.3rem; font-weight:700; color:var(--accent); text-shadow:0 0 10px rgba(212,175,55,0.3); }
+
+    .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+    #trend-message { color:var(--muted); font-size:.9rem; padding:1rem 0; }
+
+    #leaderboard-list { list-style:none; padding:0; }
+    #leaderboard-list li { padding:.65rem .75rem; border-bottom:1px solid var(--border); font-size:.95rem; color:#e8dfc0; }
+    #leaderboard-list li:last-child { border-bottom:none; }
+    .leaderboard-current-user { background:rgba(212,175,55,0.12); border-radius:6px; font-weight:700; color:var(--accent) !important; }
+
+    #notifications { position:fixed; top:1rem; right:1rem; z-index:1000; display:flex; flex-direction:column; gap:.5rem; max-width:320px; }
+    .notification { padding:.75rem 1.25rem; border-radius:8px; font-size:.9rem; color:#fff; backdrop-filter:blur(8px); }
+    .notification--success { background:rgba(20,120,60,0.9); border:1px solid rgba(80,200,120,0.3); }
+    .notification--error { background:rgba(180,30,30,0.9); border:1px solid rgba(255,80,80,0.3); }
+
+    .sell-all-btn {
+      background:rgba(180,30,30,0.7); border:1px solid rgba(255,80,80,0.2);
+      border-radius:6px; color:#fff; cursor:pointer; font-size:.8rem;
+      min-height:44px; min-width:44px; padding:.4rem .75rem; transition:opacity .2s;
+    }
+    .sell-all-btn:hover { opacity:.85; }
+
+    @media (max-width:768px) { header,nav { padding:.65rem 1rem; } main { padding:1rem; } .charts-grid { grid-template-columns:1fr; } }
+    @media (max-width:480px) { .header-title { font-size:1.1rem; } table { font-size:.8rem; } th,td { padding:.5rem; } .card { padding:1rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="header-title">📈 PaperTrade</span>
+    <span id="balance-display">$10,000.00</span>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">☀️</button>
+      <button id="logout-btn" class="icon-btn" aria-label="Logout">Logout</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn" data-section="trade">Trade</button>
+    <button class="nav-btn" data-section="portfolio">Portfolio</button>
+    <button class="nav-btn" data-section="history">History</button>
+    <button class="nav-btn" data-section="leaderboard">Leaderboard</button>
+  </nav>
+
+  <main>
+    <section id="trade-section">
+      <div class="card">
+        <h2>Search Stocks</h2>
+        <div class="search-wrapper">
+          <input type="text" id="stock-search" placeholder="Search by symbol or name…" autocomplete="off" />
+          <div id="search-results"></div>
+        </div>
+        <p id="selected-price"></p>
+        <div class="chart-wrapper"><canvas id="price-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Place Order</h2>
+        <form id="trade-form">
+          <label for="trade-action">Action</label>
+          <select id="trade-action"><option value="BUY">BUY</option><option value="SELL">SELL</option></select>
+          <input type="hidden" id="selected-symbol" value="" />
+          <label for="trade-quantity">Quantity</label>
+          <input type="number" id="trade-quantity" min="1" step="1" placeholder="Enter quantity" required />
+          <button type="submit" class="btn-primary">Execute Trade</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="portfolio-section" style="display:none">
+      <div class="card">
+        <div class="portfolio-summary">
+          <h2>Holdings</h2>
+          <span id="total-value"></span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Price</th><th>Current</th><th>P/L</th><th>P/L %</th><th></th></tr></thead>
+            <tbody id="holdings-table"></tbody>
+          </table>
+        </div>
+        <div class="charts-grid">
+          <div><canvas id="portfolio-chart"></canvas></div>
+          <div><canvas id="trend-chart"></canvas><p id="trend-message"></p></div>
+        </div>
+        <div style="margin-top:1rem">
+          <button id="reset-btn" class="btn-danger">Reset Account</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="history-section" style="display:none">
+      <div class="card">
+        <h2>Transaction History</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Action</th><th>Symbol</th><th>Qty</th><th>Price</th><th>Total</th><th>Date/Time</th></tr></thead>
+            <tbody id="history-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="leaderboard-section" style="display:none">
+      <div class="card">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboard-list"></ol>
+      </div>
+    </section>
+  </main>
+
+  <div id="notifications"></div>
+
+  <script type="module">
+    import { initTheme, toggleTheme } from './js/theme.js';
+    import { startPolling } from './js/pricePoller.js';
+    import { initTradeModule } from './js/trade.js';
+    import { loadPortfolio } from './js/portfolio.js';
+    import { loadHistory } from './js/history.js';
+    import { loadLeaderboard } from './js/leaderboard.js';
+    import { get, post } from './js/api.js';
+
+    initTheme();
+
+    // Check if user is logged in — if not, redirect to login
+    const userData = await get('/user/portfolio').catch(() => null);
+    if (!userData) {
+      window.location.href = 'login.html';
+    }
+
+    const username = userData ? userData.username || '' : '';
+
+    function updateBalance(balance) {
+      const el = document.getElementById('balance-display');
+      if (el) el.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(balance);
+    }
+    if (userData) updateBalance(userData.balance);
+
+    const sections = ['trade', 'portfolio', 'history', 'leaderboard'];
+    function showSection(name) {
+      sections.forEach(s => {
+        document.getElementById(`${s}-section`).style.display = s === name ? '' : 'none';
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === name));
+      if (name === 'portfolio') loadPortfolio();
+      if (name === 'history') loadHistory();
+      if (name === 'leaderboard') loadLeaderboard(username);
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.section)));
+    showSection('trade');
+    startPolling();
+    initTradeModule();
+
+    window.addEventListener('tradeExecuted', async () => {
+      const data = await get('/user/portfolio');
+      if (data) updateBalance(data.balance);
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await post('/auth/logout');
+      window.location.href = 'login.html';
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', async () => {
+      if (!confirm('Reset your account to $10,000? This cannot be undone.')) return;
+      await post('/user/reset');
+      updateBalance(10000);
+      loadPortfolio();
+    });
+  </script>
+</body>
+</html>

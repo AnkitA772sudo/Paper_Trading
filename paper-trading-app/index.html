@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaperTrade — Virtual Stock Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="PaperTrade Logo" style="height:44px;width:44px;object-fit:contain;border-radius:6px;" />
+      PaperTrade
+    </div>
+    <div class="user-info">
+      <span id="userInfo" style="color:rgba(0,200,255,0.6);font-size:.9rem"></span>
+      <button id="themeToggle" class="theme-toggle">☀️</button>
+      <button id="resetBtn" class="btn-danger" style="font-size:.85rem;padding:.45rem .9rem">Reset</button>
+      <button id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav id="nav" style="display:none">
+    <button class="nav-btn active" data-section="dashboard">Dashboard</button>
+    <button class="nav-btn" data-section="portfolio">Portfolio</button>
+    <button class="nav-btn" data-section="history">History</button>
+    <button class="nav-btn" data-section="leaderboard">Leaderboard</button>
+  </nav>
+
+  <main>
+
+    <!-- Login -->
+    <section id="login-section" class="section active">
+      <h1>📈 PaperTrade</h1>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter username" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password" required />
+        </div>
+        <button type="submit" class="btn" style="width:100%">Log In →</button>
+      </form>
+      <p>No account? <a href="#" onclick="showSignup();return false;">Sign up</a></p>
+    </section>
+
+    <!-- Signup -->
+    <section id="signup-section" class="section">
+      <h1>Create Account</h1>
+      <form id="signupForm">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="signupUsername" placeholder="Choose a username" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" placeholder="Min 6 characters" required />
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="confirmPassword" placeholder="Repeat password" required />
+        </div>
+        <button type="submit" class="btn" style="width:100%">Sign Up →</button>
+      </form>
+      <p><a href="#" onclick="showLogin();return false;">Already have an account? Login</a></p>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard-section" class="section">
+      <div class="balance-card">
+        <span class="balance-label">Available Balance</span>
+        <span class="balance" id="dashboardBalance">$10,000.00</span>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Trade Panel -->
+        <div>
+          <h3 style="color:#00c8ff;margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px;font-size:.85rem">Quick Trade</h3>
+          <div class="search-container">
+            <input type="text" id="stockSearch" placeholder="Search stocks (AAPL, Tesla…)" autocomplete="off" />
+            <div id="searchResults"></div>
+          </div>
+          <form id="tradeForm">
+            <div class="form-group">
+              <label>Stock</label>
+              <select id="stockSymbol" required>
+                <option value="">Select stock</option>
+              </select>
+              <small id="currentPrice" style="color:#00c8ff;font-weight:700;margin-top:.4rem;display:block">$0.00</small>
+            </div>
+            <div class="form-group">
+              <label>Action</label>
+              <select id="tradeAction">
+                <option value="buy">BUY</option>
+                <option value="sell">SELL</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" id="quantity" min="0.0001" step="0.0001" placeholder="0" required />
+            </div>
+            <button type="submit" class="btn" style="width:100%">Execute Trade →</button>
+          </form>
+        </div>
+
+        <!-- Chart -->
+        <div>
+          <h3 style="color:#00c8ff;margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px;font-size:.85rem">Price Chart</h3>
+          <div style="position:relative;width:100%;height:300px;background:rgba(0,136,255,0.03);border-radius:8px;border:1px solid rgba(0,136,255,0.1);">
+            <canvas id="priceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolio-section" class="section">
+      <h2>Portfolio</h2>
+      <canvas id="portfolioChart" style="max-height:280px;margin-bottom:1.5rem"></canvas>
+      <table class="portfolio-table">
+        <thead>
+          <tr>
+            <th>Symbol</th><th>Qty</th><th>Avg Price</th>
+            <th>Current</th><th>P/L</th><th>P/L %</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="portfolioTable"></tbody>
+        <tfoot></tfoot>
+      </table>
+    </section>
+
+    <!-- History -->
+    <section id="history-section" class="section">
+      <h2>Transaction History</h2>
+      <div style="overflow-x:auto">
+        <table class="history-table">
+          <thead>
+            <tr><th>Action</th><th>Symbol</th><th>Qty</th><th>Price</th><th>Total</th><th>Date</th></tr>
+          </thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Leaderboard -->
+    <section id="leaderboard-section" class="section">
+      <h2>Leaderboard</h2>
+      <p style="color:rgba(0,200,255,0.4);margin-bottom:1rem;font-size:.85rem">Top virtual traders ranked by balance</p>
+      <div class="leaderboard"><ol></ol></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Notifications -->
+<div id="notifications"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

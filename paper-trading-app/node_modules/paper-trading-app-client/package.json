@@ -1,0 +1,13 @@
+{
+  "name": "paper-trading-app-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PaperTrade frontend client (minimal, for future bundler support)",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.0",
+    "jest": "^29.7.0"
+  }
+}
